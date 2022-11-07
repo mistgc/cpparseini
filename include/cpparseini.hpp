@@ -1,39 +1,96 @@
 #ifndef __CPPARSEINI_HPP__
 #define __CPPARSEINI_HPP__
 
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
 class Section {
-    using items = std::unordered_map<std::string, std::string>;
-private: 
-    items data;
 public:
+    using items = std::unordered_map<std::string, std::string>;
+
     Section();
+
+    Section(items data);
 
     void addItem(std::string k, std::string v);
 
+    void addItems(const std::string& content);
+
     void addItems(items kvs);
 
-    void removeItem(std::string k);
+    bool removeItem(std::string k);
+
+    void clear();
 
     std::string getValue(std::string k);
 
-    items getAll();
+    items& getAll();
+
+    void display();
+private: 
+    items data;
 };
 
 class InitFile {
+public:
     using items = std::unordered_map<std::string, std::string>;
+
+    friend class Section;
+
+    InitFile();
+
+    InitFile(std::string path);
+
+    void addSection(std::string name, items kvs);
+
+    bool removeSection(std::string name);
+
+    void clear();
+
+    Section& getSection(std::string name);
+
+    void display();
+
 private:
+    /* initialization file content after parsed (解析后配置文件内容) */
     std::unordered_map<std::string, Section> content;
 
+    /* current section (当前Section) */
+    std::string                              cur_sec;
+
+    /* path of config file loaded (加载配置文件的路径) */
     std::string                              path;
 
-    static inline bool isSection(std::string line);
+    void parseSection(std::string line) {
+        std::string k = line.substr(1, line.length()-2);
+        cur_sec = k;
+#ifdef DEBUG
+        std::cout << k << std::endl;
+#endif
+        Section v;
+        std::pair<std::string, Section> sec(k, v);
+        content.insert(sec);
+    }
 
-    static std::string parseSection(std::string line);
+    inline void parseItem(std::string line) {
+        size_t idx;
+        size_t len = line.length();
+        for (idx = 0; idx < len; idx++)
+            if (line[idx] == '=') break;
+        std::string k = line.substr(0, idx);
+        std::string v = line.substr(idx+1);
+#ifdef DEBUG
+        std::cout << k << "=" << v << std::endl;
+#endif
+        content[cur_sec].addItem(k, v);
+    }
 
-    static inline items parseItem(std::string line);
+    static inline bool isSection(std::string line) {
+        if (line[0] == '[' && line[line.length()-1] == ']') {
+            return true;
+        } else return false;
+    }
 
     static inline bool isValidLine(const std::string &line) {
         if (line.length() == 0 || line[0] == '\t' || line[0] == '\r' || line[0] == '\n') return false;
@@ -53,16 +110,5 @@ private:
         }
         return res;
     }
-public:
-    InitFile();
-
-    InitFile(std::string path);
-
-    void addSection(std::string name, items kvs);
-
-    void removeSection(std::string name);
-
-    Section& getSection(std::string name);
-
 };
 #endif //__CPPARSEINI_HPP__
