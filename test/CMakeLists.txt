@@ -31,3 +31,11 @@ add_executable(test_add_section test_add_section.cc)
 target_include_directories(test_add_section PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(test_add_section PUBLIC cpparseini)
+
+# test_modify_section
+
+add_executable(test_modify_section test_modify_section.cc)
+
+target_include_directories(test_modify_section PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+target_link_libraries(test_modify_section PUBLIC cpparseini)

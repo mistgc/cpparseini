@@ -29,9 +29,32 @@ InitFile::InitFile(std::string path) {
     }
 }
 
+InitFile::InitFile(const char* path) {
+    this->path = std::string(path);
+    char buf[512] = {0};
+    // get config content (获取配置内容)
+    std::fstream ctnt(this->path);
+    std::string cur_section;
+    while (!ctnt.eof()) {
+        ctnt.getline(buf, 512);
+        std::string raw_line(buf);
+        if (!isValidLine(raw_line)) continue;
+        std::string line = normalize(raw_line);
+        if (isSection(line))
+            parseSection(line);
+        else
+            parseItem(line);
+    }
+}
+
 void InitFile::addSection(std::string name, Section::items kvs) {
-    Section sec(kvs);
+    Section sec(name, kvs);
     std::pair<std::string, Section> p(name, sec);
+    content.insert(p);
+}
+
+void InitFile::addSection(Section sec) {
+    std::pair<std::string, Section> p(sec.getName(), sec);
     content.insert(p);
 }
 
@@ -52,9 +75,13 @@ void InitFile::clear() {
     }
 }
 
-Section& InitFile::getSection(std::string name) {
+Section* InitFile::getSection(std::string name) {
     auto iter = content.find(name);
-    return iter->second;
+    return &(iter->second);
+}
+
+Section* InitFile::getSection(const char* name) {
+    return getSection(std::string(name));
 }
 
 void InitFile::display() {
@@ -70,13 +97,35 @@ Section::Section() {
     data = Section::items();
 }
 
+Section::Section(std::string name) {
+    this->name = name;
+}
+
+Section::Section(const char* name) {
+    this->name = std::string(name);
+}
+
 Section::Section(Section::items data) {
+    this->data = data;
+}
+
+Section::Section(std::string name, Section::items data) {
+    this->name = name;
+    this->data = data;
+}
+
+Section::Section(const char* name, Section::items data) {
+    this->name = std::string(name);
     this->data = data;
 }
 
 void Section::addItem(std::string k, std::string v) {
     std::pair<std::string, std::string> item(k, v);
     data.insert(item);
+}
+
+void Section::addItem(const char* k, const char* v) {
+    addItem(std::string(k), std::string(v));
 }
 
 void Section::addItems(const std::string& content) {
@@ -122,12 +171,28 @@ void Section::clear() {
     data.clear();
 }
 
+std::string Section::getName() {
+    return name;
+}
+
 std::string Section::getValue(std::string k) {
     auto iter = data.find(k);
     if (iter != data.end())
         return iter->second;
     else 
         return NULL;
+}
+
+void Section::setValue(std::string k, std::string v) {
+    auto iter = data.find(k);
+    if (iter != data.end()) {
+        iter->second = v;
+    } else
+        addItem(k, v);
+}
+
+void Section::setValue(const char* k, const char* v) {
+    setValue(std::string(k), std::string(v));
 }
 
 Section::items& Section::getAll() {

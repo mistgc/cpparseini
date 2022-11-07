@@ -13,7 +13,17 @@ public:
 
     Section(items data);
 
+    Section(std::string name);
+
+    Section(const char* name);
+
+    Section(std::string name, items data);
+    
+    Section(const char* name, items data);
+
     void addItem(std::string k, std::string v);
+
+    void addItem(const char* k, const char* v);
 
     void addItems(const std::string& content);
 
@@ -23,13 +33,21 @@ public:
 
     void clear();
 
+    std::string getName();
+
     std::string getValue(std::string k);
+
+    void setValue(std::string k, std::string v);
+
+    void setValue(const char* k, const char* v);
 
     items& getAll();
 
     void display();
 private: 
-    items data;
+    std::string                              name;
+
+    items                                    data;
 };
 
 class InitFile {
@@ -42,13 +60,19 @@ public:
 
     InitFile(std::string path);
 
+    InitFile(const char* path);
+
     void addSection(std::string name, items kvs);
+
+    void addSection(Section sec);
 
     bool removeSection(std::string name);
 
     void clear();
 
-    Section& getSection(std::string name);
+    Section* getSection(std::string name);
+
+    Section* getSection(const char* name);
 
     void display();
 

@@ -26,3 +26,9 @@ echo
 g_print "test_add_section:"
 
 build/bin/test/test_add_section
+
+echo
+
+g_print "test_modify_section:"
+
+build/bin/test/test_modify_section
