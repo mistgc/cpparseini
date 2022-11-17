@@ -1,19 +1,15 @@
-executable('test_read_valid_line', 'test_read_valid_line.cc',
-    dependencies: cpparseini_dep
-)
+test_cases = [
+  'read_valid_line',
+  'display',
+  'remove_section',
+  'add_section',
+  'modify_section'
+]
 
-executable('test_display', 'test_display.cc',
+foreach i : test_cases
+  executable(
+    'test_' + i,
+    'test_' + i + '.cc',
     dependencies: cpparseini_dep
-)
-
-executable('test_remove_section', 'test_remove_section.cc',
-    dependencies: cpparseini_dep
-)
-
-executable('test_add_section', 'test_add_section.cc',
-    dependencies: cpparseini_dep
-)
-
-executable('test_modify_section', 'test_modify_section.cc',
-    dependencies: cpparseini_dep
-)
+  )
+endforeach
